@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/../../Uni/Semester 4/CG/cg_lösungen/OGLViewer_dk/.idea/OGLViewer_dk.iml" filepath="$PROJECT_DIR$/../../Uni/Semester 4/CG/cg_lösungen/OGLViewer_dk/.idea/OGLViewer_dk.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../../Uni/Semester 4/CG/OGLViewer_dk/.idea/OGLViewer_dk.iml" filepath="$PROJECT_DIR$/../../../Uni/Semester 4/CG/OGLViewer_dk/.idea/OGLViewer_dk.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/object_viewer.iml" filepath="$PROJECT_DIR$/.idea/object_viewer.iml" />
     </modules>
   </component>
