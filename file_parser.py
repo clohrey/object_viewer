@@ -19,6 +19,9 @@ def read_obj(path):
                 vertex_normals.append(map(float, line[1:]))
             elif line[0] == 'f':
                 face = []
+                """
+                Nochmal ueberarbeiten!
+                """
                 for vertex_string in line[1:]:
                     vertex_list = vertex_string.split("/")
                     v = int(vertex_list[0]) - 1
