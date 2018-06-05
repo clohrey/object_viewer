@@ -1,7 +1,9 @@
+
+
 def read_obj(path):
     """
     Reads and formats .obj files
-    :param file_name:
+    :param path:
     :return vertices, normals, faces in a list, read from object file:
     """
     geo_vertices = []

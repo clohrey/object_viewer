@@ -2,13 +2,32 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 from OpenGL.arrays import vbo
+
 from file_parser import read_obj
-import object_viewer
+from object_viewer import *
 import sys
 
-if __name__ == "__main__":
+W_WIDTH, W_HEIGHT = 500, 500
+
+
+def main():
     if len(sys.argv) < 2:
-        print("Bitte Dateipfad als Argument angeben")
+        print("Keinen Dateipfad bzw. Dateinamen angegeben!")
         sys.exit(-1)
     else:
-        read_obj(sys.argv[1])
+        print("Objectfile: " + sys.argv[1])
+
+    glutInit(sys.argv)
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH)
+    glutInitWindowSize(W_WIDTH, W_HEIGHT)
+    glutCreateWindow("Object Viewer")
+
+    glutDisplayFunc(display)
+
+    generate_vbo_data()
+    init_gl()
+
+    glutMainLoop()
+
+if __name__ == "__main__":
+    main()
