@@ -24,10 +24,11 @@ def main():
 
     glutDisplayFunc(display)
 
-    generate_vbo_data()
+    generate_environment()
     init_gl()
 
     glutMainLoop()
+
 
 if __name__ == "__main__":
     main()

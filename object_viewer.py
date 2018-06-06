@@ -10,6 +10,7 @@ from OpenGL.arrays import vbo
 
 posX, posY = 0.0, 0.0
 vertex_buffer_object = None
+default_color = (0.2, 0.8, 0.4, 0.0)
 
 
 def generate_environment():
@@ -31,7 +32,8 @@ def generate_vbo_data(geo_vertices, vertex_normals, faces):
             ni = vertex[2]
             if vertex_normals:
                 data.append(geo_vertices[vi] + vertex_normals[ni])
-            data.append(np.append(np.array(geo_vertices[vi]), normal))
+            else:
+                data.append(np.append(np.array(geo_vertices[vi]), normal))
     return data
 
 
@@ -56,12 +58,18 @@ def display():
     # Erstellt eine Betrachtungsmatrix aus einem Betrachterpunkt(CenterX, CenterY, CenterZ)
     gluLookAt(-2, 0, 4, 0, 0, 0, 0, 1, 0)
 
-    # Rendert das Vertex-Buffer-Objekt
+    # Vertex Buffer Object rendern
     vertex_buffer_object.bind()
-
+    glVertexPointer(3, GL_FLOAT, 24, vertex_buffer_object)
+    glNormalPointer(GL_FLOAT, 24, vertex_buffer_object + 12)
 
     # Bewegt den Koordinatenursprung in den Punkt(posX, posY, 0.0)
     glTranslate(posX, posY, 0.0)
+
+    glColor(default_color)
+
+    vertex_buffer_object.unbind()
+
     # Back zu Front Buffer swappen für Anzeige
     glutSwapBuffers()
 
