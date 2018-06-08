@@ -7,7 +7,7 @@ from file_parser import read_obj
 from object_viewer import *
 import sys
 
-W_WIDTH, W_HEIGHT = 500, 500
+WIDTH, HEIGHT = 500, 500
 
 
 def main():
@@ -19,12 +19,12 @@ def main():
 
     glutInit(sys.argv)
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH)
-    glutInitWindowSize(W_WIDTH, W_HEIGHT)
+    glutInitWindowSize(WIDTH, HEIGHT)
     glutCreateWindow("Object Viewer")
 
     glutDisplayFunc(display)
 
-    generate_environment()
+    init_geometry()
     init_gl()
 
     glutMainLoop()
