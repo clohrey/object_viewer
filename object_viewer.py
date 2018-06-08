@@ -1,4 +1,5 @@
 import numpy as np
+import math
 from file_parser import read_obj
 
 from OpenGL.GL import *
@@ -30,6 +31,11 @@ data_for_vbo = None
 scale_factor = 0
 model_color = BLACK
 
+start_p = None
+# https://docs.scipy.org/doc/numpy-1.12.0/reference/generated/numpy.identity.html
+act_ori = np.identity(4)
+angle = 0
+do_rotation = False
 zoomFactor, zoomMin, zoomMax = 1.0, 0.5, 10.0
 
 
@@ -64,11 +70,18 @@ def init_gl():
     glEnableClientState(GL_NORMAL_ARRAY)
     glClearColor(*WHITE)
 
+    # https://www.opengl.org/discussion_boards/showthread.php/133880-Diference-between-GL_MODELVIEW-and-GL_PROJECTION
+    # The projection matrix defines the properties of the camera that views the objects
+    # in the world coordinate frame. Here you typically set the zoom factor, aspect ratio
+    # and the near and far clipping planes.
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
 
     gluPerspective(field_of_view / zoomFactor, aspect_ratio, near, far)
 
+    # https://www.opengl.org/discussion_boards/showthread.php/133880-Diference-between-GL_MODELVIEW-and-GL_PROJECTION
+    # The modelview matrix defines how your objects are transformed
+    # (meaning translation,rotation and scaling) in your world coordinate frame
     glMatrixMode(GL_MODELVIEW)
     glutPostRedisplay()
 
@@ -92,8 +105,7 @@ def display():
     Zeichnet nacheinander jedes Frame
     Quelle: https://wiki.delphigl.com/
     """
-    global data_for_vbo, vertex_buffer_object, center
-
+    global data_for_vbo, vertex_buffer_object, center, display_mode
     # ModelView-Matrix-Modus aktivieren
     glMatrixMode(GL_MODELVIEW)
 
@@ -125,6 +137,7 @@ def display():
     glColor(model_color)
 
     if display_mode == 's':
+        # Folie 193
         glEnable(GL_LIGHT0)
         glEnable(GL_LIGHTING)
         # Wenn aktiviert werden Tiefenvergleiche getätigt
@@ -144,6 +157,7 @@ def display():
         glDisable(GL_NORMALIZE)
         glDisable(GL_COLOR_MATERIAL)
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+        # https://wiki.delphigl.com/index.php/glDrawArrays
         glDrawArrays(GL_TRIANGLES, 0, len(data_for_vbo))
 
     vertex_buffer_object.unbind()
@@ -151,8 +165,17 @@ def display():
     glutSwapBuffers()
 
 
-def key_events(key):
-    global display_mode
+def key_events(key, filler1, filler2):
+    global display_mode, model_color
+
+    key = key.decode("utf-8")
+
+    if key == 'w':
+        if glutGetModifiers() == GLUT_ACTIVE_ALT:
+            glClearColor(*WHITE)
+        else:
+            model_color = WHITE
+        glutPostRedisplay()
 
     if key == 'd':
         if display_mode == 's':
@@ -161,3 +184,73 @@ def key_events(key):
         elif display_mode == 'w':
             display_mode = 's'
             glutPostRedisplay()
+
+
+def mouse_button_pressed(button, state, x, y):
+    # https://www.opengl.org/resources/libraries/glut/spec3/node50.html
+    # Folie 195
+    global start_p, act_ori, angle, do_rotation
+    r = min(WIDTH, HEIGHT)/2.0
+
+    if button == GLUT_LEFT_BUTTON:
+        if state == GLUT_DOWN:
+            do_rotation = True
+            start_p = project_on_sphere(x, y, r)
+        if state == GLUT_UP:
+            do_rotation = False
+            act_ori = act_ori*rotate(angle, axis)
+
+
+def mouse_moved(x, y):
+    global angle, axis, scale_factor, start_p
+    if do_rotation:
+        r = min(WIDTH, HEIGHT)/2.0
+        move_p = project_on_sphere(x, y, r)
+        # TODO: Hier eventuell nochmal checken ob start_p == move_p
+        angle = math.acos(np.dot(start_p, move_p))
+        axis = np.cross(start_p, move_p)
+        glutPostRedisplay()
+
+
+def project_on_sphere(x, y, r):
+    # Arcball-Rotation Folie 195
+    x, y = x - WIDTH / 2.0, HEIGHT / 2.0 - y
+    a = min(r * r, x * x + y * y)
+    z = math.sqrt(r * r - a)
+    l = math.sqrt(x * x + y * y + z * z)
+    return x/l, y/l, z/l
+
+
+def rotate(angle, axis):
+    # TODO: Hier vlt direkt auf global angle, axis zugreifen?
+    # Rotationsberechnung Folie 195
+    c, mc = math.cos(angle), 1 - math.cos(angle)
+    s = math.sin(angle)
+    l = math.sqrt(np.dot(np.array(axis), np.array(axis)))
+    x, y, z = np.array(axis) / l
+    r = np.matrix(
+        [[x * x * mc + c, x * y * mc - z * s, x * z * mc + y * s, 0],
+         [x * y * mc + z * s, y * y * mc + c, y * z * mc - x * s, 0],
+         [x * z * mc - y * s, y * z * mc + x * s, z * z * mc + c, 0],
+         [0, 0, 0, 1]])
+    return r.transpose()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

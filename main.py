@@ -24,6 +24,10 @@ def main():
 
     glutDisplayFunc(display)
 
+    glutKeyboardFunc(key_events)
+    glutMouseFunc(mouse_button_pressed)
+    glutMotionFunc(mouse_moved)
+
     init_geometry()
     init_gl()
 
