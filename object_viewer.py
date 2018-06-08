@@ -35,6 +35,7 @@ start_p = None
 # https://docs.scipy.org/doc/numpy-1.12.0/reference/generated/numpy.identity.html
 act_ori = np.identity(4)
 angle = 0
+axis = [0, 0, 0]
 do_rotation = False
 zoomFactor, zoomMin, zoomMax = 1.0, 0.5, 10.0
 
@@ -128,6 +129,9 @@ def display():
 
     # Bewegt den Koordinatenursprung in den Punkt(posX, posY, 0.0)
     glTranslate(posX, posY, 0.0)
+
+    matrix = act_ori * rotate(angle, axis)
+    glMultMatrixf(matrix.tolist())
 
     # Folie 193, Verzerrung bzw. Spiegelung der Koordinatensystems
     glScale(scale_factor, scale_factor, scale_factor)
@@ -227,7 +231,7 @@ def rotate(angle, axis):
     c, mc = math.cos(angle), 1 - math.cos(angle)
     s = math.sin(angle)
     l = math.sqrt(np.dot(np.array(axis), np.array(axis)))
-    x, y, z = np.array(axis) / l
+    x, y, z = np.array(axis)/l
     r = np.matrix(
         [[x * x * mc + c, x * y * mc - z * s, x * z * mc + y * s, 0],
          [x * y * mc + z * s, y * y * mc + c, y * z * mc - x * s, 0],
