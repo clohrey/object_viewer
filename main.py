@@ -24,6 +24,7 @@ def main():
 
     glutDisplayFunc(display)
 
+    glutReshapeFunc(reshape)
     glutKeyboardFunc(key_events)
     glutMouseFunc(mouse_button_pressed)
     glutMotionFunc(mouse_moved)
