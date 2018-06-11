@@ -35,7 +35,7 @@ start_p = None
 # https://docs.scipy.org/doc/numpy-1.12.0/reference/generated/numpy.identity.html
 act_ori = np.identity(4)
 angle = 0
-axis = [0, 0, 0]
+axis = [0, 0, 1]
 do_rotation = False
 zoomFactor, zoomMin, zoomMax = 1.0, 0.5, 10.0
 
@@ -61,6 +61,25 @@ def calculate_normal(geo_vertices, face):
     b = geo_vertices[face[1][0]]
     c = geo_vertices[face[2][0]]
     return np.cross(np.subtract(b, a), np.subtract(c, a))
+
+
+"""
+if normals == []:
+    noNormals = True
+    for p in vertices:
+        normals.append([0,0,0])
+
+    #Normalen pro Face berechnen
+    for face in faces:
+        i, j, k = int(face[0])-1, int(face[1])-1,int(face[2])-1
+        x = array(vertices[j]) - array(vertices[i])
+        y = array(vertices[k]) - array(vertices[i])
+        n = cross(x, y)
+
+        normals[i] = [x + y for x, y in zip(normals[i], n)]
+        normals[j] = [x + y for x, y in zip(normals[j], n)]
+        normals[k] = [x + y for x, y in zip(normals[k], n)]
+"""
 
 
 def init_gl():
