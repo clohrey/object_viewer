@@ -1,5 +1,4 @@
-
-
+# noinspection PyTypeChecker
 def read_obj(path):
     """
     Reads and formats .obj files

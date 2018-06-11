@@ -44,87 +44,81 @@ rotation_mode = False
 shadow_mode = True
 resize_mode = False
 shifting_mode = False
+zooming_mode = False
 
 old_pos_x, old_pos_y = None, None
 
 bounding_box = []
 
 
+def normalize(a):
+    div = math.sqrt(a[0]**2 + a[1]**2 + a[2]**2)
+    if div:
+        a[0] = a[0] / div
+        a[1] = a[1] / div
+        a[2] = a[2] / div
+        return a
+    return [0, 0, 0]
+
+
 def generate_vbo_data(geo_vertices, vertex_normals, faces):
     data = []
-    for face in faces:
-        if not vertex_normals:
-            normal = calculate_normal(geo_vertices, face)
-        for vertex in face:
-            v = vertex[0]
-            vn = vertex[2]
-            if vertex_normals:
-                data.append(geo_vertices[v] + vertex_normals[vn])
-            else:
-                data.append(np.append(np.array(geo_vertices[v]), normal))
-    return data
 
-
-def calculate_normal(geo_vertices, face):
-    a = geo_vertices[face[0][0]]
-    b = geo_vertices[face[1][0]]
-    c = geo_vertices[face[2][0]]
-    return np.cross(np.subtract(b, a), np.subtract(c, a))
-
-
-"""
-if normals == []:
-    noNormals = True
-    for p in vertices:
-        normals.append([0,0,0])
-
-    #Normalen pro Face berechnen
-    for face in faces:
-        i, j, k = int(face[0])-1, int(face[1])-1,int(face[2])-1
-        x = array(vertices[j]) - array(vertices[i])
-        y = array(vertices[k]) - array(vertices[i])
-        n = cross(x, y)
-
-        normals[i] = [x + y for x, y in zip(normals[i], n)]
-        normals[j] = [x + y for x, y in zip(normals[j], n)]
-        normals[k] = [x + y for x, y in zip(normals[k], n)]
-        
-for i in range(len(faces)):
-for f in faces[i]:
-    f = f.split("/")
-    if noNormals:
-        pointList.append(vertices[int(f[0]) - 1] + normalize(normals[int(f[0]) - 1]))
+    if not vertex_normals:
+        [vertex_normals.append([0, 0, 0]) for x in geo_vertices]
+        vertex_normals = calculate_normals(geo_vertices, faces, vertex_normals)
+        for i in range(len(faces)):
+            for f in faces[i]:
+                data.append(geo_vertices[f[0]] + normalize(vertex_normals[f[0]]))
+        return data
     else:
-        pointList.append(vertices[int(f[0]) - 1] + normals[int(f[2]) - 1])
-"""
+        for face in faces:
+            for vertex in face:
+                v = vertex[0]
+                vn = vertex[2]
+                data.append(geo_vertices[v] + vertex_normals[vn])
+        return data
+
+
+def calculate_normals(geo_vertices, faces, vertex_normals):
+    for face in faces:
+        a, b, c = int(face[0][0])-1, int(face[1][0])-1, int(face[2][0])-1
+        x = np.array(geo_vertices[b]) - np.array(geo_vertices[a])
+        y = np.array(geo_vertices[c]) - np.array(geo_vertices[a])
+        normal = np.cross(x, y)
+
+        vertex_normals[a] = [x + y for x, y in zip(vertex_normals[a], normal)]
+        vertex_normals[b] = [x + y for x, y in zip(vertex_normals[b], normal)]
+        vertex_normals[c] = [x + y for x, y in zip(vertex_normals[c], normal)]
+    return vertex_normals
 
 
 def init_gl():
     global field_of_view, near, far, projection_mode
-    aspect_ratio = float(WIDTH) / HEIGHT
 
     glEnableClientState(GL_VERTEX_ARRAY)
     glEnableClientState(GL_NORMAL_ARRAY)
     glClearColor(*background_color)
 
+    change_projection()
+
     # https://www.opengl.org/discussion_boards/showthread.php/133880-Diference-between-GL_MODELVIEW-and-GL_PROJECTION
     # The projection matrix defines the properties of the camera that views the objects
     # in the world coordinate frame. Here you typically set the zoom factor, aspect ratio
     # and the near and far clipping planes.
-    glMatrixMode(GL_PROJECTION)
-    glLoadIdentity()
+    #glMatrixMode(GL_PROJECTION)
+    #glLoadIdentity()
 
-    gluPerspective(field_of_view / zoom_factor, aspect_ratio, near, far)
+    #gluPerspective(field_of_view / zoom_factor, aspect_ratio, near, far)
 
     # https://www.opengl.org/discussion_boards/showthread.php/133880-Diference-between-GL_MODELVIEW-and-GL_PROJECTION
     # The modelview matrix defines how your objects are transformed
     # (meaning translation,rotation and scaling) in your world coordinate frame
-    glMatrixMode(GL_MODELVIEW)
-    glutPostRedisplay()
+    # glMatrixMode(GL_MODELVIEW)
+    # glutPostRedisplay()
 
 
 def init_geometry():
-    # TODO: Nochmal drüber schauen!
     global vertex_buffer_object, scale_factor, center, light, data_for_vbo, bounding_box
     geo_vertices, vertex_normals, faces = read_obj(sys.argv[1])
 
@@ -143,6 +137,7 @@ def display():
     Quelle: https://wiki.delphigl.com/
     """
     global data_for_vbo, vertex_buffer_object, center, display_mode
+
     # ModelView-Matrix-Modus aktivieren
     glMatrixMode(GL_MODELVIEW)
 
@@ -155,7 +150,7 @@ def display():
     glLoadIdentity()
 
     # Erstellt eine Betrachtungsmatrix aus einem Betrachterpunkt(CenterX, CenterY, CenterZ)
-    gluLookAt(-2, 0, 4, 0, 0, 0, 0, 1, 0)
+    gluLookAt(0, 0, 4, 0, 0, 0, 0, 1.0, 0)
 
     # Vertex Buffer Object rendern
     vertex_buffer_object.bind()
@@ -166,14 +161,14 @@ def display():
     glNormalPointer(GL_FLOAT, 24, vertex_buffer_object + 12)
 
     # Bewegt den Koordinatenursprung in den Punkt(posX, posY, 0.0)
-    glTranslate(pos_x, pos_y, 0.0)
+    glTranslatef(pos_x, pos_y, 0.0)
 
-    matrix = act_ori * rotate(angle, axis)
+    matrix = act_ori * rotate()
     glMultMatrixf(matrix.tolist())
 
     # Folie 193, Verzerrung bzw. Spiegelung der Koordinatensystems
-    glScale(scale_factor, scale_factor, scale_factor)
-    glTranslate(-center[0], -center[1], -center[2])
+    glScalef(scale_factor, scale_factor, scale_factor)
+    glTranslatef(-center[0], -center[1], -center[2])
 
     # Setzt Farbe des anzuzeigenden Objektes
     glColor(model_color)
@@ -272,16 +267,21 @@ def key_events(key, filler1, filler2):
 def mouse_button_pressed(button, state, x, y):
     # https://www.opengl.org/resources/libraries/glut/spec3/node50.html
     # Folie 195
-    global start_p, act_ori, angle, rotation_mode, shifting_mode
-    r = min(WIDTH, HEIGHT)/2.0
+    global start_p, act_ori, angle, rotation_mode, shifting_mode, zooming_mode, old_pos_x, old_pos_y
+
+    if state == GLUT_UP:
+        old_pos_x = None
+        old_pos_y = None
 
     if button == GLUT_LEFT_BUTTON:
         if state == GLUT_DOWN:
+            r = min(WIDTH, HEIGHT) / 2.0
             rotation_mode = True
             start_p = project_on_sphere(x, y, r)
         if state == GLUT_UP:
+            act_ori = act_ori * rotate()
             rotation_mode = False
-            act_ori = act_ori*rotate(angle, axis)
+            angle = 0
 
     if button == GLUT_RIGHT_BUTTON:
         if state == GLUT_DOWN:
@@ -291,7 +291,9 @@ def mouse_button_pressed(button, state, x, y):
 
     if button == GLUT_MIDDLE_BUTTON:
         if state == GLUT_DOWN:
-            pass
+            zooming_mode = True
+        if state == GLUT_UP:
+            zooming_mode = False
 
 
 def mouse_moved(x, y):
@@ -303,9 +305,11 @@ def mouse_moved(x, y):
     if rotation_mode:
         r = min(WIDTH, HEIGHT) / 2.0
         move_p = project_on_sphere(x, y, r)
-        # TODO: Hier eventuell nochmal checken ob start_p == move_p
+        if start_p == move_p:
+            return
         angle = math.acos(np.dot(start_p, move_p))
         axis = np.cross(start_p, move_p)
+        glutPostRedisplay()
 
     if old_pos_x:
         delta_x = x - old_pos_x
@@ -319,25 +323,35 @@ def mouse_moved(x, y):
             pos_x += delta_x / scale
         if delta_y:
             pos_y -= delta_y / scale
+        glutPostRedisplay()
+
+    if zooming_mode:
+        z_scale = float(HEIGHT) / 10
+        if delta_y != 0:
+            zoom_factor -= (delta_y / z_scale)
+            if zoom_factor < zoom_min:
+                zoom_factor = zoom_min
+            if zoom_factor > zoom_max:
+                zoom_factor = zoom_max
+            change_projection()
 
     old_pos_x = x
     old_pos_y = y
 
-    glutPostRedisplay()
-
 
 def project_on_sphere(x, y, r):
     # Arcball-Rotation Folie 195
-    x, y = x - WIDTH / 2.0, HEIGHT / 2.0 - y
+    x = x - WIDTH / 2.0
+    y = HEIGHT / 2.0 - y
     a = min(r * r, x * x + y * y)
     z = math.sqrt(r * r - a)
     l = math.sqrt(x * x + y * y + z * z)
     return x/l, y/l, z/l
 
 
-def rotate(angle, axis):
-    # TODO: Hier vlt direkt auf global angle, axis zugreifen?
+def rotate():
     # Rotationsberechnung Folie 195
+    global angle, axis
     c, mc = math.cos(angle), 1 - math.cos(angle)
     s = math.sin(angle)
     l = math.sqrt(np.dot(np.array(axis), np.array(axis)))
@@ -356,9 +370,9 @@ def shadow():
     glPushMatrix()  # Aktuellen Zustand merken
     p = [1.0, 0, 0, 0, 0, 1.0, 0, -1.0 / light[1], 0, 0, 1.0, 0, 0, 0, 0, 0]
     glTranslatef(light[0], light[1], light[2])
-    glTranslate(0.0, bounding_box[0][1], 0.0)
+    glTranslatef(0.0, bounding_box[0][1], 0.0)
     glMultMatrixf(p)  # Projektion berechnen
-    glTranslate(0.0, -bounding_box[0][1], 0.0)
+    glTranslatef(0.0, -bounding_box[0][1], 0.0)
     glTranslatef(-light[0], -light[1], -light[2])
     glColor(*shadow_color)
     glDisable(GL_LIGHTING)
@@ -402,21 +416,3 @@ def reshape(width, height):
     WIDTH, HEIGHT = width, height
     glViewport(0, 0, int(width), int(height))
     change_projection()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
