@@ -82,7 +82,7 @@ def generate_vbo_data(geo_vertices, vertex_normals, faces):
 
 def calculate_normals(geo_vertices, faces, vertex_normals):
     for face in faces:
-        a, b, c = int(face[0][0])-1, int(face[1][0])-1, int(face[2][0])-1
+        a, b, c = int(face[0][0]), int(face[1][0]), int(face[2][0])
         x = np.array(geo_vertices[b]) - np.array(geo_vertices[a])
         y = np.array(geo_vertices[c]) - np.array(geo_vertices[a])
         normal = np.cross(x, y)
@@ -366,7 +366,7 @@ def rotate():
 
 def shadow():
     global bounding_box, shadow_color, data_for_vbo
-
+    # Arbeitsblatt 7
     glPushMatrix()  # Aktuellen Zustand merken
     p = [1.0, 0, 0, 0, 0, 1.0, 0, -1.0 / light[1], 0, 0, 1.0, 0, 0, 0, 0, 0]
     glTranslatef(light[0], light[1], light[2])
