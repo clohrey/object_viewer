@@ -13,6 +13,7 @@ def main():
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH)
     glutInitWindowSize(WIDTH, HEIGHT)
     glutCreateWindow("Object Viewer")
+
     glutDisplayFunc(display)
     glutReshapeFunc(reshape)
     glutKeyboardFunc(key_events)

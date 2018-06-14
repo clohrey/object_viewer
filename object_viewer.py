@@ -57,8 +57,7 @@ def normalize(a):
         a[0] = a[0] / div
         a[1] = a[1] / div
         a[2] = a[2] / div
-        return a
-    return [0, 0, 0]
+    return a
 
 
 def generate_vbo_data(geo_vertices, vertex_normals, faces):
@@ -101,21 +100,6 @@ def init_gl():
     glClearColor(*background_color)
 
     change_projection()
-
-    # https://www.opengl.org/discussion_boards/showthread.php/133880-Diference-between-GL_MODELVIEW-and-GL_PROJECTION
-    # The projection matrix defines the properties of the camera that views the objects
-    # in the world coordinate frame. Here you typically set the zoom factor, aspect ratio
-    # and the near and far clipping planes.
-    #glMatrixMode(GL_PROJECTION)
-    #glLoadIdentity()
-
-    #gluPerspective(field_of_view / zoom_factor, aspect_ratio, near, far)
-
-    # https://www.opengl.org/discussion_boards/showthread.php/133880-Diference-between-GL_MODELVIEW-and-GL_PROJECTION
-    # The modelview matrix defines how your objects are transformed
-    # (meaning translation,rotation and scaling) in your world coordinate frame
-    # glMatrixMode(GL_MODELVIEW)
-    # glutPostRedisplay()
 
 
 def init_geometry():
